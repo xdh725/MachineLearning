@@ -1,3 +1,5 @@
+import math
+
 class Vector(object):
     def __init__(self, coordinates):
         try:
@@ -5,6 +7,8 @@ class Vector(object):
                 raise ValueError
             self.coordinates = tuple(coordinates)
             self.dimension = len(coordinates)
+            self.magnitude = self.calculateMagnitude()
+            self.direction = self.calculateDirection()
 
         except ValueError:
             raise ValueError('The coordinates must be nonempty')
@@ -80,18 +84,63 @@ class Vector(object):
                 list.append(v / self.coordinates[i])
         return Vector(list)
 
-v11 = Vector([8.218, -9.341])
-v12 = Vector([-1.129, 2.111])
+    def calculateMagnitude(self):
+        squareTotal = 0.0
+        for i in range(self.dimension):
+            squareTotal += (self.coordinates[i] ** 2)
+        result = math.sqrt(squareTotal)
+        return result
 
-v21 = Vector([7.119, 8.215])
-v22 = Vector([-8.223, 0.878])
+    def calculateDirection(self):
+        list = []
+        try:
+            for i in range(self.dimension):
+                list.append(self.coordinates[i] / self.magnitude)
+        except ZeroDivisionError as e:
+            raise Exception('Cannot normalize the zero vector')
+        return tuple(list)
 
-v31 = Vector([1.671, -1.012, -0.318])
+    def magnitude(self):
+        coordinates_squared = [x ** 2 for x in self.coordinates]
+        return sqrt(sum(coordinates_squared))
 
-print v11+v12
-print v21-v22
-print 7.41*v31
-print 2/v11
+    def normalized(self):
+        try:
+            magnitude = self.magnitude()
+            return self.times_scalar(1./magnitude)
+        except ZeroDivisionError as e:
+            raise Exception('Cannot normalize the zero vector')
+
+    def plus(self, v):
+        new_coordinates = [x+y for x,y in zip(self.coordinates, v.coordinates)]
+        return Vector(new_coordinates)
+
+#exercise 8
+
+# exercise 6
+# v61 = Vector([-0.221, 7.437])
+# v62 = Vector([8.813, -1.331, -6.247])
+# v63 = Vector([5.581, -2.136])
+# v64 = Vector([1.996, 3.108, -4.554])
+#
+# print v61.magnitude
+# print v62.magnitude
+# print v63.direction
+# print v64.direction
+
+#exercise 4
+# v11 = Vector([8.218, -9.341])
+# v12 = Vector([-1.129, 2.111])
+#
+# v21 = Vector([7.119, 8.215])
+# v22 = Vector([-8.223, 0.878])
+#
+# v31 = Vector([1.671, -1.012, -0.318])
+#
+# print v11+v12
+# print v21-v22
+# print 7.41*v31
+# print 2/v11
 
 # v1 = Vector([1,2,3])
 # v2 = Vector([3,5,3])
