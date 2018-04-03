@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-：
 
 from decimal import Decimal, getcontext
-
 from vector import Vector
+from tools import MyDecimal
 
 getcontext().prec = 30
 
@@ -15,13 +15,13 @@ class Plane(object):
         self.dimension = 3
 
         if not normal_vector:
-            all_zeros = ['0']*self.dimension
+            all_zeros = [0]*self.dimension
             normal_vector = Vector(all_zeros)
         self.normal_vector = normal_vector
 
         if not constant_term:
-            constant_term = Decimal('0')
-        self.constant_term = Decimal(constant_term)
+            constant_term = 0
+        self.constant_term = constant_term
 
         self.set_basepoint()
 
@@ -29,11 +29,11 @@ class Plane(object):
     def set_basepoint(self):
         try:
             n = self.normal_vector
-            c = self.constant_term
-            basepoint_coords = ['0']*self.dimension
+            c = Decimal(self.constant_term)
+            basepoint_coords = [0]*self.dimension
 
             initial_index = Plane.first_nonzero_index(n)
-            initial_coefficient = n[initial_index]
+            initial_coefficient = Decimal(n[initial_index])
 
             basepoint_coords[initial_index] = c/initial_coefficient
             self.basepoint = Vector(basepoint_coords)
@@ -105,7 +105,9 @@ class Plane(object):
 
         x0 = self.basepoint
         y0 = other.basepoint
-        
+
+        if x0.is_equal(y0):
+            return True
 
     # 判断两个平面是否平行
     def is_parallel_to(self, p):
@@ -121,28 +123,23 @@ class Plane(object):
         raise Exception(Plane.NO_NONZERO_ELTS_FOUND_MSG)
 
 
-class MyDecimal(Decimal):
-    def is_near_zero(self, eps=1e-10):
-        return abs(self) < eps
-
-
 # Example
-plane1 = Plane(normal_vector=Vector([-0.412, 3.806, 0.728]), constant_term=-3.46)
-plane2 = Plane(normal_vector=Vector([1.03, -9.515, -1.82]), constant_term=8.65)
+plane1 = Plane(normal_vector=Vector(['-0.412', '3.806', '0.728']), constant_term='-3.46')
+plane2 = Plane(normal_vector=Vector(['1.03', '-9.515', '-1.82']), constant_term='8.65')
 
-print 'first pair of planes are parallel?: {}'.format(plane1.is_parallel_to(plane2))
-print 'first pair of planes are equal?: {}'.format(plane1 == plane2)
-
-
-plane3 = Plane(normal_vector=Vector([2.611, 5.528, 0.283]), constant_term=4.6)
-plane4 = Plane(normal_vector=Vector([7.715, 8.306, 5.342]), constant_term=3.76)
-
-print 'second pair of planes are parallel?: {}'.format(plane3.is_parallel_to(plane4))
-print 'second pair of planes are equal?: {}'.format(plane3 == plane4)
+print 'first pair of planes are parallel?: {0}'.format(plane1.is_parallel_to(plane2))
+print 'first pair of planes are equal?: {0}'.format(plane1 == plane2)
 
 
-plane5 = Plane(normal_vector=Vector([-7.926, 8.625, -7.217]), constant_term=-7.952)
-plane6 = Plane(normal_vector=Vector([-2.642, 2.875, -2.404]), constant_term=-2.443)
+plane3 = Plane(normal_vector=Vector(['2.611', '5.528', '0.283']), constant_term='4.6')
+plane4 = Plane(normal_vector=Vector(['7.715', '8.306', '5.342']), constant_term='3.76')
 
-print 'third pair of planes are parallel?: {}'.format(plane5.is_parallel_to(plane6))
-print 'third pair of planes are equal?: {}'.format(plane5 == plane6)
+print 'second pair of planes are parallel?: {0}'.format(plane3.is_parallel_to(plane4))
+print 'second pair of planes are equal?: {0}'.format(plane3 == plane4)
+
+
+plane5 = Plane(normal_vector=Vector(['-7.926', '8.625', '-7.212']), constant_term='-7.952')
+plane6 = Plane(normal_vector=Vector(['-2.642', '2.875', '-2.404']), constant_term='-2.443')
+
+print 'third pair of planes are parallel?: {0}'.format(plane5.is_parallel_to(plane6))
+print 'third pair of planes are equal?: {0}'.format(plane5 == plane6)

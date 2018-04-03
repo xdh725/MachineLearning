@@ -7,7 +7,9 @@ if version_info.major != 2 and version_info.minor != 7:
 print version_info
 
 import math
-from decimal import Decimal
+from decimal import Decimal, getcontext
+from tools import MyDecimal
+getcontext().prec = 30
 
 class Vector(object):
     def __init__(self, coordinates):
@@ -18,8 +20,8 @@ class Vector(object):
             self.dimension = len(coordinates)
             self.idx = 0
 
-            self.magnitude = self.calculateMagnitude()
-            self.direction = self.calculateDirection()
+            self.magnitude = self.magnitudeMethod()
+            # self.direction = self.normalized()
 
             # print "magnitude: " ,self.magnitude
             # print "direction: " ,self.direction
@@ -35,21 +37,23 @@ class Vector(object):
     def next(self):
        self.idx += 1
        try:
-           return Decimal(self.coordinates[self.idx-1])
+           return self.coordinates[self.idx-1]
        except IndexError:
            self.idx = 0
            raise StopIteration  # Done iterating.
 
     def __getitem__(self,index):
-        return Decimal(self.coordinates[index])
+        return self.coordinates[index]
 
     def __str__(self):
-        return 'Vector: {}'.format(self.coordinates)
+        return 'Vector: {0}'.format(self.coordinates)
 
 
     def __eq__(self, v):
         return self.coordinates == v.coordinates
 
+    def is_equal(self, v):
+        return self.coordinates == v.coordinates
 
     def plus(self, v):
         new_coordinates = [x+y for x,y in zip(self.coordinates, v.coordinates)]
@@ -124,25 +128,25 @@ class Vector(object):
                 list.append(v / self.coordinates[i])
         return Vector(list)
 
-    def calculateMagnitude(self):
-        squareTotal = 0.0
-        for i in range(self.dimension):
-            squareTotal += (self.coordinates[i] ** 2)
-        result = math.sqrt(squareTotal)
-        return result
+    # def calculateMagnitude(self):
+    #     squareTotal = 0.0
+    #     for i in range(self.dimension):
+    #         squareTotal += (self.coordinates[i] ** 2)
+    #     result = math.sqrt(squareTotal)
+    #     return result
 
-    def calculateDirection(self):
-        list = []
-        try:
-            for i in range(self.dimension):
-                list.append(self.coordinates[i] / self.magnitude)
-        except ZeroDivisionError as e:
-            raise Exception('Cannot normalize the zero vector')
-        return tuple(list)
+    # def calculateDirection(self):
+    #     list = []
+    #     try:
+    #         for i in range(self.dimension):
+    #             list.append(self.coordinates[i] / self.magnitude)
+    #     except ZeroDivisionError as e:
+    #         raise Exception('Cannot normalize the zero vector')
+    #     return tuple(list)
 
     def magnitudeMethod(self):
-        coordinates_squared = [x ** 2 for x in self.coordinates]
-        return math.sqrt(sum(coordinates_squared))
+        coordinates_squared = [Decimal(x) ** 2 for x in self.coordinates]
+        return Decimal(math.sqrt(sum(coordinates_squared)))
 
     def normalized(self):
         try:
@@ -156,7 +160,7 @@ class Vector(object):
         return Vector(new_coordinates)
 
     def convolution(self, v):
-        coordinates_multiply = [x*y for x,y in zip(self.coordinates, v.coordinates)]
+        coordinates_multiply = [Decimal(x)*Decimal(y) for x,y in zip(self.coordinates, v.coordinates)]
         return sum(coordinates_multiply)
 
     def dot(self, v):
@@ -170,6 +174,8 @@ class Vector(object):
 
         if self.magnitude==0 or v.magnitude==0 :
             return 0
+        self.magnitude = self.magnitudeMethod()
+        v.magnitude = v.magnitudeMethod()
         result = math.acos(tmp_convolution / (self.magnitude * v.magnitude))
         if in_degrees:
             return math.degrees(result)
@@ -208,8 +214,10 @@ class Vector(object):
             return False
 
     def is_parallel_to(self, v):
+        isNearZero = Decimal(self.angle_with(v))
+        isNearPi = Decimal(self.angle_with(v) - math.pi)
         return (self.is_zero() or v.is_zero() or
-                self.angle_with(v) == 0 or self.angle_with(v) == math.pi)
+                MyDecimal(isNearZero).is_near_zero() or MyDecimal(isNearPi).is_near_zero())
 
     def is_orthogonal_to(self, v, tolerance=1e-10):
         return abs(self.convolution(v)) < tolerance
